@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Not Harmonograph</title>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    .controls {
+      margin-bottom: 20px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    .control-group {
+      display: flex;
+      flex-direction: column;
+    }
+    label {
+      margin-bottom: 5px;
+    }
+    canvas {
+      border: 1px solid #ccc;
+    }
+  </style>
+</head>
+<body>
+  <div class="controls">
+    <div class="control-group">
+      <label for="r">Driving Circle Radius (r):</label>
+      <input type="number" id="r" value="130" onchange="updateParams()">
+    </div>
+    <div class="control-group">
+      <label for="r1">First Circle Radius (r1):</label>
+      <input type="number" id="r1" value="50" onchange="updateParams()">
+    </div>
+    <div class="control-group">
+      <label for="r2">Second Circle Radius (r2):</label>
+      <input type="number" id="r2" value="25" onchange="updateParams()">
+    </div>
+    <div class="control-group">
+      <label for="l1">First Rod Length (l1):</label>
+      <input type="number" id="l1" value="180" onchange="updateParams()">
+    </div>
+    <div class="control-group">
+      <label for="l2">Second Rod Length (l2):</label>
+      <input type="number" id="l2" value="100" onchange="updateParams()">
+    </div>
+    <div class="control-group">
+      <label for="w">Angular Velocity (w):</label>
+      <input type="number" id="w" value="0.01" step="0.01" onchange="updateParams()">
+    </div>
+  </div>
+  <canvas id="canvas" width="600" height="400"></canvas>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    // Parameters
+    let r = 130;
+    let r1 = 50;
+    let r2 = 25;
+    let l1 = 180;
+    let l2 = 100;
+    let d = 190;
+    let w = 0.01;
+    let angle1 = 0;
+    let angle2 = 0;
+    let angle = 0;
+    let relpoints = [];
+    let d1 = r + r1;
+    let d2 = r + r2;
+
+    function updateParams() {
+      r = parseFloat(document.getElementById('r').value);
+      r1 = parseFloat(document.getElementById('r1').value);
+      r2 = parseFloat(document.getElementById('r2').value);
+      l1 = parseFloat(document.getElementById('l1').value);
+      l2 = parseFloat(document.getElementById('l2').value);
+      w = parseFloat(document.getElementById('w').value);
+      
+      // Reset variables
+      d1 = r + r1;
+      d2 = r + r2;
+      angle1 = 0;
+      angle2 = 0;
+      angle = 0;
+      relpoints = [];
+    }
+
+    function dist(x1, y1, x2, y2) {
+      return Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
+    }
+
+    function findIntersection(p1x, p1y, len1, p2x, p2y, len2) {
+      let distance = dist(p1x, p1y, p2x, p2y);
+      
+      if (distance > len1 + len2 || distance < Math.abs(len1 - len2)) {
+        return false;
+      }
+      
+      let a = (len1 * len1 - len2 * len2 + distance * distance) / (2 * distance);
+      let h = Math.sqrt(len1 * len1 - a * a);
+      
+      let x3 = p1x + a * (p2x - p1x) / distance;
+      let y3 = p1y + a * (p2y - p1y) / distance;
+      
+      let x4 = x3 + h * (p2y - p1y) / distance;
+      let y4 = y3 - h * (p2x - p1x) / distance;
+      
+      return { x: x4, y: y4 };
+    }
+
+    function rotatePoint(x, y, cx, cy, angle) {
+      let dx = x - cx;
+      let dy = y - cy;
+      return {
+        x: cx + dx * Math.cos(angle) - dy * Math.sin(angle),
+        y: cy + dx * Math.sin(angle) + dy * Math.cos(angle)
+      };
+    }
+
+    function draw() {
+      ctx.fillStyle = '#dcdcdc';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      let x1 = canvas.width / 3;
+      let y1 = 2 * canvas.height / 3;
+      let x2 = x1 + d;
+      let y2 = y1;
+      let x3 = x1 + ((d * d + d1 * d1 - d2 * d2) / (2 * d));
+      let y3 = y1 - (Math.sqrt((d + d1 + d2) * (d + d1 - d2) * (d - d1 + d2) * (d1 - d + d2)) / (2 * d));
+      
+      let px1 = x1 + r1 * Math.cos(angle1);
+      let py1 = y1 + r1 * Math.sin(angle1);
+      let px2 = x2 + r2 * Math.cos(angle2);
+      let py2 = y2 + r2 * Math.sin(angle2);
+      
+      let intersect = findIntersection(px1, py1, l1, px2, py2, l2);
+      
+      if (intersect) {
+        let relPoint = {
+          x: intersect.x - x3,
+          y: intersect.y - y3,
+          angle: angle
+        };
+        relpoints.push(relPoint);
+        
+        // Draw circles
+        ctx.strokeStyle = 'black';
+        ctx.lineWidth = 0.5;
+        ctx.beginPath();
+        ctx.arc(x1, y1, r1, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(x2, y2, r2, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(x3, y3, r, 0, Math.PI * 2);
+        ctx.stroke();
+        
+        // Draw rods
+        ctx.beginPath();
+        ctx.moveTo(px1, py1);
+        ctx.lineTo(intersect.x, intersect.y);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(px2, py2);
+        ctx.lineTo(intersect.x, intersect.y);
+        ctx.stroke();
+        
+        // Draw trace
+        ctx.strokeStyle = 'red';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        for (let i = 0; i < relpoints.length; i++) {
+          let p = relpoints[i];
+          let rotated = rotatePoint(x3 + p.x, y3 + p.y, x3, y3, angle - p.angle);
+          if (i === 0) {
+            ctx.moveTo(rotated.x, rotated.y);
+          } else {
+            ctx.lineTo(rotated.x, rotated.y);
+          }
+        }
+        ctx.stroke();
+      } else {
+        ctx.fillStyle = 'black';
+        ctx.font = '14px Arial';
+        ctx.fillText("You broke the machine. Please set dimensions that make physical sense", 50, 80);
+      }
+      
+      angle1 -= w * (r / r1);
+      angle2 -= w * (r / r2);
+      angle += w;
+      
+      requestAnimationFrame(draw);
+    }
+
+    draw();
+  </script>
+</body>
+</html>
