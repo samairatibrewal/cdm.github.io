@@ -32,23 +32,35 @@
   <div class="controls">
     <div class="control-group">
       <label for="r">Driving Circle Radius (r):</label>
-      <input type="number" id="r" value="130" onchange="updateParams()">
+      <input type="number" id="r" value="120" onchange="updateParams()">
     </div>
     <div class="control-group">
       <label for="r1">First Circle Radius (r1):</label>
-      <input type="number" id="r1" value="50" onchange="updateParams()">
+      <input type="number" id="r1" value="25" onchange="updateParams()">
     </div>
     <div class="control-group">
       <label for="r2">Second Circle Radius (r2):</label>
-      <input type="number" id="r2" value="25" onchange="updateParams()">
+      <input type="number" id="r2" value="40" onchange="updateParams()">
     </div>
     <div class="control-group">
       <label for="l1">First Rod Length (l1):</label>
-      <input type="number" id="l1" value="180" onchange="updateParams()">
+      <input type="number" id="l1" value="106" onchange="updateParams()">
     </div>
     <div class="control-group">
       <label for="l2">Second Rod Length (l2):</label>
-      <input type="number" id="l2" value="100" onchange="updateParams()">
+      <input type="number" id="l2" value="140" onchange="updateParams()">
+    </div>
+    <div class="control-group">
+      <label for="r11">first circle inner radius (r11):</label>
+      <input type="number" id="r11" value="18" onchange="updateParams()">
+    </div>
+    <div class="control-group">
+      <label for="r22">Second circle inner radius (r22):</label>
+      <input type="number" id="r22" value="32" onchange="updateParams()">
+    </div>
+    <div class="control-group">
+      <label for="d">distance between circle centers (l2):</label>
+      <input type="number" id="d" value="110" onchange="updateParams()">
     </div>
     <div class="control-group">
       <label for="w">Angular Velocity (w):</label>
@@ -65,6 +77,8 @@
     let r = 130;
     let r1 = 50;
     let r2 = 25;
+    let r11 = 18;
+    let r22 = 32;
     let l1 = 180;
     let l2 = 100;
     let d = 190;
@@ -80,6 +94,9 @@
       r = parseFloat(document.getElementById('r').value);
       r1 = parseFloat(document.getElementById('r1').value);
       r2 = parseFloat(document.getElementById('r2').value);
+      r11 = parseFloat(document.getElementById('r11').value);
+      r22 = parseFloat(document.getElementById('r22').value);
+      d = parseFloat(document.getElementById('d').value);
       l1 = parseFloat(document.getElementById('l1').value);
       l2 = parseFloat(document.getElementById('l2').value);
       w = parseFloat(document.getElementById('w').value);
@@ -136,10 +153,10 @@
       let x3 = x1 + ((d * d + d1 * d1 - d2 * d2) / (2 * d));
       let y3 = y1 - (Math.sqrt((d + d1 + d2) * (d + d1 - d2) * (d - d1 + d2) * (d1 - d + d2)) / (2 * d));
       
-      let px1 = x1 + r1 * Math.cos(angle1);
-      let py1 = y1 + r1 * Math.sin(angle1);
-      let px2 = x2 + r2 * Math.cos(angle2);
-      let py2 = y2 + r2 * Math.sin(angle2);
+      let px1 = x1 + r11 * Math.cos(angle1);
+      let py1 = y1 + r11 * Math.sin(angle1);
+      let px2 = x2 + r22 * Math.cos(angle2);
+      let py2 = y2 + r22 * Math.sin(angle2);
       
       let intersect = findIntersection(px1, py1, l1, px2, py2, l2);
       
